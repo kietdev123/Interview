@@ -1,0 +1,330 @@
+{
+  "info": {
+    "name": "Courier API Manual Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "const timestamp = Date.now().toString();",
+          "const rand7 = Math.floor(1000000 + Math.random() * 9000000).toString();",
+          "pm.collectionVariables.set('timestamp', timestamp);",
+          "pm.collectionVariables.set('rand7', rand7);",
+          "pm.collectionVariables.set('USER_EMAIL', `courier_${timestamp}@example.com`);",
+          "pm.collectionVariables.set('USER_NAME', `courier_${timestamp}`);",
+          "pm.collectionVariables.set('USER_PHONE', `090${rand7}`);",
+          "pm.collectionVariables.set('COURIER_NAME', `Courier ${timestamp}`);"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "BASE_URL", "value": "http://localhost:3000/api" },
+    { "key": "ADMIN_EMAIL", "value": "admin@vhandelivery.com" },
+    { "key": "ADMIN_PASSWORD", "value": "admin123" },
+    { "key": "USER_EMAIL", "value": "courier_{{timestamp}}@example.com" },
+    { "key": "USER_PASSWORD", "value": "Test1234!" },
+    { "key": "USER_NAME", "value": "courier_{{timestamp}}" },
+    { "key": "USER_PHONE", "value": "090{{rand7}}" },
+    { "key": "COURIER_NAME", "value": "Courier {{timestamp}}" },
+    { "key": "ADMIN_TOKEN", "value": "" },
+    { "key": "USER_TOKEN", "value": "" },
+    { "key": "VERIFICATION_TOKEN", "value": "" },
+    { "key": "COURIER_ID", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{BASE_URL}}/auth/login", "host": ["{{BASE_URL}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{ADMIN_EMAIL}}\",\n  \"password\": \"{{ADMIN_PASSWORD}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.access_token) pm.collectionVariables.set('ADMIN_TOKEN', json.access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "User Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{BASE_URL}}/auth/register", "host": ["{{BASE_URL}}"], "path": ["auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{USER_EMAIL}}\",\n  \"password\": \"{{USER_PASSWORD}}\",\n  \"username\": \"{{USER_NAME}}\",\n  \"phone\": \"{{USER_PHONE}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "User Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{BASE_URL}}/auth/login", "host": ["{{BASE_URL}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{USER_EMAIL}}\",\n  \"password\": \"{{USER_PASSWORD}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.access_token) pm.collectionVariables.set('USER_TOKEN', json.access_token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Courier OTP",
+      "item": [
+        {
+          "name": "Request OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{BASE_URL}}/couriers/otp/request", "host": ["{{BASE_URL}}"], "path": ["couriers", "otp", "request"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{USER_PHONE}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{BASE_URL}}/couriers/otp/verify", "host": ["{{BASE_URL}}"], "path": ["couriers", "otp", "verify"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{USER_PHONE}}\",\n  \"code\": \"<OTP_CODE>\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.verificationToken) pm.collectionVariables.set('VERIFICATION_TOKEN', json.verificationToken);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Courier Registration",
+      "item": [
+        {
+          "name": "Register Courier",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{USER_TOKEN}}" }
+            ],
+            "url": { "raw": "{{BASE_URL}}/couriers/register", "host": ["{{BASE_URL}}"], "path": ["couriers", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{COURIER_NAME}}\",\n  \"phone\": \"{{USER_PHONE}}\",\n  \"verificationToken\": \"{{VERIFICATION_TOKEN}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('COURIER_ID', json.id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Courier Admin",
+      "item": [
+        {
+          "name": "Approve Courier",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }
+            ],
+            "url": { "raw": "{{BASE_URL}}/couriers/{{COURIER_ID}}/approve", "host": ["{{BASE_URL}}"], "path": ["couriers", "{{COURIER_ID}}", "approve"] },
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        },
+        {
+          "name": "Reject Courier",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }
+            ],
+            "url": { "raw": "{{BASE_URL}}/couriers/{{COURIER_ID}}/reject", "host": ["{{BASE_URL}}"], "path": ["couriers", "{{COURIER_ID}}", "reject"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Incomplete documents\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Admin Create Courier",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }
+            ],
+            "url": { "raw": "{{BASE_URL}}/couriers/admin-create", "host": ["{{BASE_URL}}"], "path": ["couriers", "admin-create"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": <USER_ID_FROM_DB>,\n  \"name\": \"Admin Courier\",\n  \"phone\": \"092<random>\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Couriers (Search)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }],
+            "url": { "raw": "{{BASE_URL}}/couriers?search={{USER_PHONE}}", "host": ["{{BASE_URL}}"], "path": ["couriers"], "query": [{ "key": "search", "value": "{{USER_PHONE}}" }] }
+          }
+        },
+        {
+          "name": "Get Courier By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }],
+            "url": { "raw": "{{BASE_URL}}/couriers/{{COURIER_ID}}", "host": ["{{BASE_URL}}"], "path": ["couriers", "{{COURIER_ID}}"] }
+          }
+        },
+        {
+          "name": "Update Courier",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }
+            ],
+            "url": { "raw": "{{BASE_URL}}/couriers/{{COURIER_ID}}", "host": ["{{BASE_URL}}"], "path": ["couriers", "{{COURIER_ID}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Courier Updated\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Courier",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }],
+            "url": { "raw": "{{BASE_URL}}/couriers/{{COURIER_ID}}", "host": ["{{BASE_URL}}"], "path": ["couriers", "{{COURIER_ID}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Failed & Edge",
+      "item": [
+        {
+          "name": "OTP Verify Invalid Code",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{BASE_URL}}/couriers/otp/verify", "host": ["{{BASE_URL}}"], "path": ["couriers", "otp", "verify"] },
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"{{USER_PHONE}}\",\n  \"code\": \"000000\"\n}" }
+          }
+        },
+        {
+          "name": "Register Courier Invalid Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{USER_TOKEN}}" }
+            ],
+            "url": { "raw": "{{BASE_URL}}/couriers/register", "host": ["{{BASE_URL}}"], "path": ["couriers", "register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Invalid Token Courier\",\n  \"phone\": \"{{USER_PHONE}}\",\n  \"verificationToken\": \"invalid-token\"\n}" }
+          }
+        },
+        {
+          "name": "Non-admin Approve",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{USER_TOKEN}}" }
+            ],
+            "url": { "raw": "{{BASE_URL}}/couriers/{{COURIER_ID}}/approve", "host": ["{{BASE_URL}}"], "path": ["couriers", "{{COURIER_ID}}", "approve"] },
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        },
+        {
+          "name": "Non-admin Reject",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{USER_TOKEN}}" }
+            ],
+            "url": { "raw": "{{BASE_URL}}/couriers/{{COURIER_ID}}/reject", "host": ["{{BASE_URL}}"], "path": ["couriers", "{{COURIER_ID}}", "reject"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"No permission\"\n}" }
+          }
+        },
+        {
+          "name": "Approve Idempotent",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }
+            ],
+            "url": { "raw": "{{BASE_URL}}/couriers/{{COURIER_ID}}/approve", "host": ["{{BASE_URL}}"], "path": ["couriers", "{{COURIER_ID}}", "approve"] },
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        },
+        {
+          "name": "Reject Idempotent",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }
+            ],
+            "url": { "raw": "{{BASE_URL}}/couriers/{{COURIER_ID}}/reject", "host": ["{{BASE_URL}}"], "path": ["couriers", "{{COURIER_ID}}", "reject"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Incomplete documents\"\n}" }
+          }
+        }
+      ]
+    }
+  ]
+}

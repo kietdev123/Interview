@@ -10,8 +10,7 @@
       "options": {
         "jestConfig": "api-service-e2e/jest.config.cts",
         "passWithNoTests": true
-      },
-      "dependsOn": ["api-service:build", "api-service:serve"]
+      }
     }
   }
 }
