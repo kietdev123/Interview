@@ -38,8 +38,11 @@
       "continue": "Continue",
       "view": "View details",
       "edit": "Edit",
-      "close": "Close"
+      "close": "Close",
+      "search": "Search",
+      "confirm": "Confirm"
     },
+    "search": "Search",
     "loading": "Loading...",
     "noData": "No data available",
     "actions": "Actions",
@@ -56,6 +59,7 @@
       "total": "Total"
     },
     "status": {
+      "all": "All",
       "success": "Success",
       "error": "Error",
       "active": "Active",
@@ -136,13 +140,93 @@
     "footer": {
       "systemOnline": "System Online",
       "apiConnection": "API Connection",
-      "copyright": "© 2025 SharkBee. All rights reserved."
+      "copyright": " 2025 SharkBee. All rights reserved."
     },
     "common": {
-      "search": "Search...",
+      "search": "Search",
       "actions": "Actions",
       "comingSoon": "Feature coming soon",
       "filter": "Filter"
+    },
+    "users": {
+      "couriers": {
+        "title": "Courier Approvals",
+        "filter": {
+          "status": "Status",
+          "date": "Registration Date",
+          "from": "From",
+          "to": "To"
+        },
+        "table": {
+          "name": "NAME",
+          "phone": "PHONE",
+          "createdAt": "REGISTERED",
+          "approvalStatus": "APPROVAL",
+          "operationalStatus": "STATUS",
+          "actions": "ACTIONS"
+        },
+        "actions": {
+          "approve": "Approve",
+          "reject": "Reject",
+          "add": "Add courier",
+          "edit": "Edit",
+          "delete": "Delete"
+        },
+        "form": {
+          "panelTitle": "Courier details",
+          "createTitle": "Create courier",
+          "editTitle": "Edit courier",
+          "subtitle": "Complete required information",
+          "userId": "User ID",
+          "userIdPlaceholder": "Enter user ID",
+          "name": "Full name",
+          "namePlaceholder": "Enter courier name",
+          "phone": "Phone number",
+          "phonePlaceholder": "Enter phone number",
+          "taxCode": "Tax code",
+          "taxCodePlaceholder": "Enter tax code",
+          "vehicleType": "Vehicle type",
+          "vehicleTypePlaceholder": "Enter vehicle type",
+          "operationalStatus": "Operational status",
+          "driverLicenseUrl": "Driver license URL",
+          "driverLicenseUrlPlaceholder": "Paste driver license URL",
+          "vehicleImageUrl": "Vehicle image URL",
+          "vehicleImageUrlPlaceholder": "Paste vehicle image URL",
+          "idCardUrl": "ID card URL",
+          "idCardUrlPlaceholder": "Paste ID card URL",
+          "submitCreate": "Create courier",
+          "submitEdit": "Save changes"
+        },
+        "delete": {
+          "title": "Delete courier",
+          "message": "Are you sure you want to delete this courier?"
+        },
+        "reject": {
+          "title": "Reject Courier",
+          "subtitle": "Provide a clear reason for rejection.",
+          "placeholder": "Enter rejection reason...",
+          "confirmTitle": "Reject courier",
+          "confirmMessage": "Are you sure you want to reject this courier?"
+        },
+        "approve": {
+          "confirmTitle": "Approve courier",
+          "confirmMessage": "Are you sure you want to approve this courier?"
+        },
+        "toast": {
+          "approved": "Courier approved successfully",
+          "rejected": "Courier rejected",
+          "created": "Courier created successfully",
+          "updated": "Courier updated successfully",
+          "deleted": "Courier deleted successfully",
+          "approveError": "Unable to approve courier",
+          "rejectError": "Unable to reject courier",
+          "createError": "Unable to create courier",
+          "updateError": "Unable to update courier",
+          "deleteError": "Unable to delete courier",
+          "loadError": "Failed to load couriers",
+          "loadDetailError": "Failed to load courier details"
+        }
+      }
     },
     "partners": {
       "tabs": {

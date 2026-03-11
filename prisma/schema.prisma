@@ -484,7 +484,27 @@ model Courier {
   userId          Int      @unique @map("user_id")
   name            String?
   phone           String?
-  status          String?  // 'available' | 'busy' | 'offline'
+  taxCode         String?  @map("tax_code")
+  driverLicenseUrl String? @map("driver_license_url") @db.Text
+  vehicleImageUrl String?  @map("vehicle_image_url") @db.Text
+  idCardUrl       String?  @map("id_card_url") @db.Text
+
+  // Approval Status (one-time, for registration process)
+  approvalStatus    ApprovalStatus    @default(PENDING) @map("approval_status")
+  approvedAt        DateTime?         @map("approved_at")
+  approvedBy        Int?              @map("approved_by")
+  rejectedAt        DateTime?         @map("rejected_at")
+  rejectedBy        Int?              @map("rejected_by")
+  rejectionReason   String?           @map("rejection_reason") @db.Text
+
+  // Operational Status (ongoing, can change multiple times)
+  operationalStatus OperationalStatus @default(ACTIVE) @map("operational_status")
+  statusChangedAt   DateTime?         @map("status_changed_at")
+  statusChangedBy   Int?              @map("status_changed_by")
+  statusReason      String?           @map("status_reason") @db.Text
+
+  // Legacy compatibility: trạng thái runtime của courier app (available/busy/offline)
+  status          String?
   vehicleType     String?  @map("vehicle_type") // 'bike' | 'motorbike' | 'car'
   currentLocation Json?    @map("current_location")
   createdAt       DateTime @default(now()) @map("created_at")
@@ -494,6 +514,8 @@ model Courier {
   user   User    @relation(fields: [userId], references: [id])
   orders Order[]
 
+  @@index([approvalStatus, createdAt])
+  @@index([operationalStatus, createdAt])
   @@map("couriers")
 }
 

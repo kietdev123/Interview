@@ -11,7 +11,31 @@ export class OtpService {
     private jwtService: JwtService,
   ) {}
 
-  async requestOtp(dto: RequestOtpDto) {
+  async requestOtp(
+    dto: RequestOtpDto,
+    options?: {
+      rateLimitKey?: string;
+      rateLimitWindowMs?: number;
+      maxRequests?: number;
+    }
+  ) {
+    const rateLimitWindowMs = options?.rateLimitWindowMs ?? 5 * 60 * 1000;
+    const maxRequests = options?.maxRequests ?? 3;
+
+    if (options?.rateLimitKey) {
+      const windowStart = new Date(Date.now() - rateLimitWindowMs);
+      const recentRequests = await this.prisma.otpVerification.count({
+        where: {
+          phone: dto.phone,
+          createdAt: { gt: windowStart },
+        },
+      });
+
+      if (recentRequests >= maxRequests) {
+        throw new BadRequestException(AUTH_MESSAGES.OTP_RATE_LIMITED);
+      }
+    }
+
     // Generate 6 digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes

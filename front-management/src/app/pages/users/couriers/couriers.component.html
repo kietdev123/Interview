@@ -1,0 +1,115 @@
+<div class="flex flex-col gap-4 md:gap-6">
+  <section class="flex flex-col gap-4 bg-surface rounded-xl border border-border p-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <app-custom-select
+        class="w-[220px]"
+        [options]="statusOptions"
+        [placeholder]="'admin.users.couriers.filter.status'"
+        [clearable]="false"
+        (selectionChange)="onStatusFilterChange($event)"
+      />
+
+      <button
+        type="button"
+        class="h-10 px-4 rounded-lg bg-primary text-content-on-primary text-sm"
+        (click)="applySearch()"
+      >
+        {{ 'common.button.search' | translate }}
+      </button>
+    </div>
+  </section>
+
+  <app-data-table
+    [config]="tableConfig"
+    [data]="couriers()"
+    [pagination]="pagination()"
+    [headerConfig]="tableHeaderConfig"
+    [itemCount]="pagination().total"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)"
+    (headerSearch)="onHeaderSearch($event)"
+    (headerFilter)="onHeaderFilter($event)"
+    (headerAction)="onHeaderAction($event)"
+  >
+    <ng-template appTableCell="actions" let-row>
+      <div class="flex items-center justify-center gap-2">
+        <button
+          class="px-3 py-1.5 rounded-lg text-sm bg-status-success-bg text-status-success"
+          [disabled]="row.approvalStatus !== 'pending'"
+          [class.opacity-50]="row.approvalStatus !== 'pending'"
+          (click)="approveCourier(row)"
+        >
+          {{ 'admin.users.couriers.actions.approve' | translate }}
+        </button>
+        <button
+          class="px-3 py-1.5 rounded-lg text-sm bg-status-error-bg text-status-error"
+          [disabled]="row.approvalStatus !== 'pending'"
+          [class.opacity-50]="row.approvalStatus !== 'pending'"
+          (click)="openRejectModal(row)"
+        >
+          {{ 'admin.users.couriers.actions.reject' | translate }}
+        </button>
+        <button
+          class="px-3 py-1.5 rounded-lg text-sm border border-border text-content-primary"
+          (click)="openEditPanel(row)"
+        >
+          {{ 'admin.users.couriers.actions.edit' | translate }}
+        </button>
+        <button
+          class="px-3 py-1.5 rounded-lg text-sm border border-status-error text-status-error"
+          (click)="confirmDelete(row)"
+        >
+          {{ 'admin.users.couriers.actions.delete' | translate }}
+        </button>
+      </div>
+    </ng-template>
+  </app-data-table>
+
+  <app-slide-over-panel
+    [isOpen]="formPanelOpen()"
+    [config]="formPanelConfig"
+    (closePanel)="closeFormPanel()"
+  >
+    <app-courier-form
+      [mode]="formMode()"
+      [initialData]="formInitialData()"
+      [isLoading]="formLoading()"
+      (submitForm)="onFormSubmit($event)"
+      (cancel)="closeFormPanel()"
+    />
+  </app-slide-over-panel>
+
+  @if (rejectModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <div class="w-full max-w-md rounded-2xl bg-surface p-6 shadow-xl">
+        <h3 class="text-lg font-semibold text-content-primary">
+          {{ 'admin.users.couriers.reject.title' | translate }}
+        </h3>
+        <p class="mt-1 text-sm text-content-tertiary">
+          {{ 'admin.users.couriers.reject.subtitle' | translate }}
+        </p>
+        <textarea
+          rows="4"
+          class="mt-4 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm"
+          [value]="rejectReason()"
+          (input)="rejectReason.set($any($event.target).value)"
+          [placeholder]="'admin.users.couriers.reject.placeholder' | translate"
+        ></textarea>
+        <div class="mt-4 flex items-center justify-end gap-3">
+          <button
+            class="px-4 py-2 rounded-lg border border-border text-sm"
+            (click)="closeRejectModal()"
+          >
+            {{ 'common.button.cancel' | translate }}
+          </button>
+          <button
+            class="px-4 py-2 rounded-lg bg-status-error-bg text-status-error text-sm"
+            (click)="confirmReject()"
+          >
+            {{ 'admin.users.couriers.actions.reject' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
