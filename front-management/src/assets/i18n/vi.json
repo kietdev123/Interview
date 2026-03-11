@@ -37,8 +37,12 @@
       "delete": "Xóa",
       "continue": "Tiếp tục",
       "view": "Xem chi tiết",
-      "edit": "Chỉnh sửa"
+      "edit": "Chỉnh sửa",
+      "search": "Tìm kiếm",
+      "close": "Đóng",
+      "confirm": "Xác nhận"
     },
+    "search": "Tìm kiếm",
     "loading": "Đang tải...",
     "noData": "Không có dữ liệu",
     "actions": "Thao tác",
@@ -55,6 +59,7 @@
       "total": "Tổng"
     },
     "status": {
+      "all": "Tất cả",
       "success": "Thành công",
       "error": "Lỗi",
       "active": "Hoạt động",
@@ -136,13 +141,93 @@
     "footer": {
       "systemOnline": "Hệ thống đang hoạt động",
       "apiConnection": "Kết nối API",
-      "copyright": "© 2025 SharkBee. All rights reserved."
+      "copyright": " 2025 SharkBee. All rights reserved."
     },
     "common": {
-      "search": "Tìm kiếm...",
+      "search": "Tìm kiếm",
       "actions": "Thao tác",
       "comingSoon": "Tính năng đang phát triển",
       "filter": "Lọc"
+    },
+    "users": {
+      "couriers": {
+        "title": "Duyệt tài xế",
+        "filter": {
+          "status": "Trạng thái",
+          "date": "Ngày đăng ký",
+          "from": "Từ",
+          "to": "Đến"
+        },
+        "table": {
+          "name": "TÊN",
+          "phone": "SỐ ĐIỆN THOẠI",
+          "createdAt": "NGÀY ĐĂNG KÝ",
+          "approvalStatus": "DUYỆT",
+          "operationalStatus": "TRẠNG THÁI",
+          "actions": "THAO TÁC"
+        },
+        "actions": {
+          "approve": "Duyệt",
+          "reject": "Từ chối",
+          "add": "Thêm tài xế",
+          "edit": "Chỉnh sửa",
+          "delete": "Xóa"
+        },
+        "form": {
+          "panelTitle": "Thông tin tài xế",
+          "createTitle": "Tạo tài xế",
+          "editTitle": "Chỉnh sửa tài xế",
+          "subtitle": "Hoàn tất thông tin bắt buộc",
+          "userId": "Mã người dùng",
+          "userIdPlaceholder": "Nhập mã người dùng",
+          "name": "Họ và tên",
+          "namePlaceholder": "Nhập tên tài xế",
+          "phone": "Số điện thoại",
+          "phonePlaceholder": "Nhập số điện thoại",
+          "taxCode": "Mã số thuế",
+          "taxCodePlaceholder": "Nhập mã số thuế",
+          "vehicleType": "Loại xe",
+          "vehicleTypePlaceholder": "Nhập loại xe",
+          "operationalStatus": "Trạng thái hoạt động",
+          "driverLicenseUrl": "Link giấy phép lái xe",
+          "driverLicenseUrlPlaceholder": "Dán link giấy phép lái xe",
+          "vehicleImageUrl": "Link ảnh xe",
+          "vehicleImageUrlPlaceholder": "Dán link ảnh xe",
+          "idCardUrl": "Link CCCD",
+          "idCardUrlPlaceholder": "Dán link CCCD",
+          "submitCreate": "Tạo tài xế",
+          "submitEdit": "Lưu thay đổi"
+        },
+        "delete": {
+          "title": "Xóa tài xế",
+          "message": "Bạn có chắc chắn muốn xóa tài xế này không?"
+        },
+        "reject": {
+          "title": "Từ chối tài xế",
+          "subtitle": "Hãy cung cấp lý do rõ ràng.",
+          "placeholder": "Nhập lý do từ chối...",
+          "confirmTitle": "Từ chối tài xế",
+          "confirmMessage": "Bạn có chắc chắn muốn từ chối tài xế này không?"
+        },
+        "approve": {
+          "confirmTitle": "Duyệt tài xế",
+          "confirmMessage": "Bạn có chắc chắn muốn duyệt tài xế này không?"
+        },
+        "toast": {
+          "approved": "Đã duyệt tài xế",
+          "rejected": "Đã từ chối tài xế",
+          "created": "Tạo tài xế thành công",
+          "updated": "Cập nhật tài xế thành công",
+          "deleted": "Đã xóa tài xế",
+          "approveError": "Không thể duyệt tài xế",
+          "rejectError": "Không thể từ chối tài xế",
+          "createError": "Không thể tạo tài xế",
+          "updateError": "Không thể cập nhật tài xế",
+          "deleteError": "Không thể xóa tài xế",
+          "loadError": "Không thể tải danh sách tài xế",
+          "loadDetailError": "Không thể tải chi tiết tài xế"
+        }
+      }
     },
     "partners": {
       "tabs": {

@@ -38,7 +38,9 @@
       "continue": "계속",
       "view": "상세 보기",
       "edit": "수정",
-      "close": "닫기"
+      "close": "닫기",
+      "search": "검색",
+      "confirm": "확인"
     },
     "loading": "로딩 중...",
     "noData": "데이터가 없습니다",
@@ -56,6 +58,7 @@
       "total": "총"
     },
     "status": {
+      "all": "전체",
       "success": "성공",
       "error": "오류",
       "active": "활성",
@@ -82,13 +85,7 @@
       "invalidEmail": "이메일이 올바르지 않습니다",
       "invalidPhone": "전화번호가 올바르지 않습니다"
     },
-    "validation": {
-      "required": "필수 입력 항목입니다",
-      "minLength": "최소 길이가 부족합니다",
-      "invalidFormat": "형식이 올바르지 않습니다",
-      "invalidEmail": "이메일이 올바르지 않습니다",
-      "invalidPhone": "전화번호가 올바르지 않습니다"
-    }
+    "search": "검색"
   },
   "app": {
     "title": {
@@ -205,13 +202,93 @@
     "footer": {
       "systemOnline": "시스템 온라인",
       "apiConnection": "API 연결",
-      "copyright": "© 2025 SharkBee. All rights reserved."
+      "copyright": " 2025 SharkBee. All rights reserved."
     },
     "common": {
       "search": "검색...",
       "actions": "작업",
       "comingSoon": "개발 중인 기능",
       "filter": "필터"
+    },
+    "users": {
+      "couriers": {
+        "title": "기사 승인",
+        "filter": {
+          "status": "상태",
+          "date": "등록일",
+          "from": "시작",
+          "to": "종료"
+        },
+        "table": {
+          "name": "이름",
+          "phone": "전화번호",
+          "createdAt": "등록일",
+          "approvalStatus": "승인",
+          "operationalStatus": "상태",
+          "actions": "작업"
+        },
+        "actions": {
+          "approve": "승인",
+          "reject": "거부",
+          "add": "기사 추가",
+          "edit": "수정",
+          "delete": "삭제"
+        },
+        "form": {
+          "panelTitle": "기사 정보",
+          "createTitle": "기사 생성",
+          "editTitle": "기사 수정",
+          "subtitle": "필수 정보를 입력하세요",
+          "userId": "사용자 ID",
+          "userIdPlaceholder": "사용자 ID 입력",
+          "name": "이름",
+          "namePlaceholder": "기사 이름 입력",
+          "phone": "전화번호",
+          "phonePlaceholder": "전화번호 입력",
+          "taxCode": "세금 코드",
+          "taxCodePlaceholder": "세금 코드 입력",
+          "vehicleType": "차량 종류",
+          "vehicleTypePlaceholder": "차량 종류 입력",
+          "operationalStatus": "운영 상태",
+          "driverLicenseUrl": "운전면허 URL",
+          "driverLicenseUrlPlaceholder": "운전면허 URL 붙여넣기",
+          "vehicleImageUrl": "차량 이미지 URL",
+          "vehicleImageUrlPlaceholder": "차량 이미지 URL 붙여넣기",
+          "idCardUrl": "신분증 URL",
+          "idCardUrlPlaceholder": "신분증 URL 붙여넣기",
+          "submitCreate": "기사 생성",
+          "submitEdit": "변경사항 저장"
+        },
+        "approve": {
+          "confirmTitle": "기사 승인",
+          "confirmMessage": "이 기사를 승인하시겠습니까?"
+        },
+        "reject": {
+          "title": "기사 거부",
+          "subtitle": "거부 사유를 입력하세요.",
+          "placeholder": "거부 사유를 입력...",
+          "confirmTitle": "기사 거부",
+          "confirmMessage": "이 기사를 거부하시겠습니까?"
+        },
+        "delete": {
+          "title": "기사 삭제",
+          "message": "이 기사를 삭제하시겠습니까?"
+        },
+        "toast": {
+          "approved": "기사 승인 완료",
+          "rejected": "기사 거부 완료",
+          "created": "기사 생성 완료",
+          "updated": "기사 업데이트 완료",
+          "deleted": "기사 삭제 완료",
+          "approveError": "기사 승인 실패",
+          "rejectError": "기사 거부 실패",
+          "createError": "기사 생성 실패",
+          "updateError": "기사 업데이트 실패",
+          "deleteError": "기사 삭제 실패",
+          "loadError": "기사 목록을 불러오지 못했습니다",
+          "loadDetailError": "기사 정보를 불러오지 못했습니다"
+        }
+      }
     },
     "partners": {
       "tabs": {

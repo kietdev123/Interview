@@ -1,0 +1,110 @@
+<form class="flex flex-col gap-5" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-semibold text-content-primary">
+        {{
+          (mode() === 'create'
+            ? 'admin.users.couriers.form.createTitle'
+            : 'admin.users.couriers.form.editTitle') | translate
+        }}
+      </h3>
+      <span class="text-xs text-content-tertiary">
+        {{ 'admin.users.couriers.form.subtitle' | translate }}
+      </span>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <label class="flex flex-col gap-2 text-sm text-content-secondary">
+        {{ 'admin.users.couriers.form.userId' | translate }}
+        <input
+          type="number"
+          min="1"
+          formControlName="userId"
+          [disabled]="mode() === 'edit'"
+          class="h-10 rounded-lg border border-border bg-surface px-3 text-sm"
+          [placeholder]="'admin.users.couriers.form.userIdPlaceholder' | translate"
+        />
+        @if (form.get('userId')?.invalid && form.get('userId')?.touched) {
+          <span class="text-xs text-status-error">
+            {{ 'common.validation.required' | translate }}
+          </span>
+        }
+      </label>
+
+      <label class="flex flex-col gap-2 text-sm text-content-secondary">
+        {{ 'admin.users.couriers.form.name' | translate }}
+        <input
+          type="text"
+          formControlName="name"
+          class="h-10 rounded-lg border border-border bg-surface px-3 text-sm"
+          [placeholder]="'admin.users.couriers.form.namePlaceholder' | translate"
+        />
+      </label>
+
+      <label class="flex flex-col gap-2 text-sm text-content-secondary">
+        {{ 'admin.users.couriers.form.phone' | translate }}
+        <input
+          type="text"
+          formControlName="phone"
+          class="h-10 rounded-lg border border-border bg-surface px-3 text-sm"
+          [placeholder]="'admin.users.couriers.form.phonePlaceholder' | translate"
+        />
+      </label>
+
+      <label class="flex flex-col gap-2 text-sm text-content-secondary">
+        {{ 'admin.users.couriers.form.taxCode' | translate }}
+        <input
+          type="text"
+          formControlName="taxCode"
+          class="h-10 rounded-lg border border-border bg-surface px-3 text-sm"
+          [placeholder]="'admin.users.couriers.form.taxCodePlaceholder' | translate"
+        />
+      </label>
+
+      <label class="flex flex-col gap-2 text-sm text-content-secondary">
+        {{ 'admin.users.couriers.form.vehicleType' | translate }}
+        <input
+          type="text"
+          formControlName="vehicleType"
+          class="h-10 rounded-lg border border-border bg-surface px-3 text-sm"
+          [placeholder]="'admin.users.couriers.form.vehicleTypePlaceholder' | translate"
+        />
+      </label>
+
+      <label class="flex flex-col gap-2 text-sm text-content-secondary">
+        {{ 'admin.users.couriers.form.operationalStatus' | translate }}
+        <select
+          formControlName="operationalStatus"
+          class="h-10 rounded-lg border border-border bg-surface px-3 text-sm"
+        >
+          @for (option of operationalStatusOptions; track option.value) {
+            <option [value]="option.value">
+              {{ option.labelKey | translate }}
+            </option>
+          }
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+    <button
+      type="button"
+      class="px-4 py-2 rounded-lg border border-border text-sm"
+      (click)="onCancel()"
+    >
+      {{ 'common.button.cancel' | translate }}
+    </button>
+    <button
+      type="submit"
+      class="px-4 py-2 rounded-lg bg-primary text-content-on-primary text-sm disabled:opacity-60"
+      [disabled]="isFormInvalid() || isLoading()"
+    >
+      {{
+        (mode() === 'create'
+          ? 'admin.users.couriers.form.submitCreate'
+          : 'admin.users.couriers.form.submitEdit') | translate
+      }}
+    </button>
+  </div>
+</form>
