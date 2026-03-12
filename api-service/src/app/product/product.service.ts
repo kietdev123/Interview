@@ -140,13 +140,17 @@ export class ProductService {
     };
 
     if (name) {
-      data.name = name as unknown as Prisma.InputJsonValue;
+      data.name = toLocalizedJson(name) as unknown as Prisma.InputJsonValue;
     }
     if (description) {
-      data.description = description as unknown as Prisma.InputJsonValue;
+      data.description = toLocalizedJson(description) as unknown as Prisma.InputJsonValue;
     }
     if (metadata) {
-      data.metadata = metadata as unknown as Prisma.InputJsonValue;
+      const metaObj =
+        typeof metadata === PRIMITIVE_TYPES.STRING
+          ? JSON.parse(metadata as unknown as string)
+          : metadata;
+      data.metadata = metaObj as unknown as Prisma.InputJsonValue;
     }
 
     return this.prisma.product.update({

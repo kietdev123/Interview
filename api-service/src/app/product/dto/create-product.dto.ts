@@ -1,5 +1,14 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString, IsBoolean, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsBoolean,
+  ValidateNested,
+  IsEnum,
+} from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
+import { ProductStatus } from '@prisma/client';
 
 export class LocalizedStringDto {
   @IsString()
@@ -86,6 +95,15 @@ export class CreateProductDto {
   @IsString()
   @IsOptional()
   merchantId?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  categoryId?: number;
+
+  @IsOptional()
+  @IsEnum(ProductStatus)
+  status?: ProductStatus;
 
   @IsBoolean()
   @IsOptional()
