@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, ProductStatus } from '@prisma/client';
 import {
   PRODUCT_MESSAGES,
   COMMON_MESSAGES,
@@ -70,17 +70,74 @@ export class ProductService {
     });
   }
 
-  async findAll() {
+  private buildSearchWhere(search?: string): Prisma.ProductWhereInput {
+    const keyword = search?.trim();
+    if (!keyword) {
+      return {};
+    }
+
+    return {
+      OR: [
+        { sku: { contains: keyword, mode: 'insensitive' } },
+        {
+          name: {
+            path: ['vi'],
+            string_contains: keyword,
+          },
+        },
+        {
+          name: {
+            path: ['en'],
+            string_contains: keyword,
+          },
+        },
+        {
+          name: {
+            path: ['ko'],
+            string_contains: keyword,
+          },
+        },
+        {
+          description: {
+            path: ['vi'],
+            string_contains: keyword,
+          },
+        },
+        {
+          description: {
+            path: ['en'],
+            string_contains: keyword,
+          },
+        },
+        {
+          description: {
+            path: ['ko'],
+            string_contains: keyword,
+          },
+        },
+      ],
+    };
+  }
+
+  async findAll(search?: string) {
+    const searchWhere = this.buildSearchWhere(search);
+
     return this.prisma.product.findMany({
+      where: {
+        status: ProductStatus.PUBLISHED,
+        ...searchWhere,
+      },
       include: {
         merchant: true,
       },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async findAllByMerchant(
     merchantExternalId: string,
-    paginationDto: PaginationDto
+    paginationDto: PaginationDto,
+    search?: string
   ): Promise<PaginatedResult<any>> {
     const merchant = await this.prisma.merchant.findUnique({
       where: { externalId: merchantExternalId },
@@ -93,16 +150,22 @@ export class ProductService {
     const { page = 1, limit = 10 } = paginationDto;
     const skip = (page - 1) * limit;
 
+    const searchWhere = this.buildSearchWhere(search);
+    const where: Prisma.ProductWhereInput = {
+      merchantId: merchant.id,
+      ...searchWhere,
+    };
+
     const [data, total] = await Promise.all([
       this.prisma.product.findMany({
-        where: { merchantId: merchant.id },
+        where,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {},
       }),
       this.prisma.product.count({
-        where: { merchantId: merchant.id },
+        where,
       }),
     ]);
 
@@ -118,8 +181,11 @@ export class ProductService {
   }
 
   async findOne(externalId: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { externalId },
+    const product = await this.prisma.product.findFirst({
+      where: {
+        externalId,
+        status: ProductStatus.PUBLISHED,
+      },
       include: {
         merchant: true,
       },
@@ -130,8 +196,20 @@ export class ProductService {
     return product;
   }
 
+  private async findOneAnyStatus(externalId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { externalId },
+    });
+
+    if (!product) {
+      throw new NotFoundException(PRODUCT_MESSAGES.PRODUCT_NOT_FOUND);
+    }
+
+    return product;
+  }
+
   async update(externalId: string, updateProductDto: UpdateProductDto) {
-    await this.findOne(externalId);
+    await this.findOneAnyStatus(externalId);
 
     const { name, description, metadata, ...rest } = updateProductDto;
 
@@ -140,13 +218,17 @@ export class ProductService {
     };
 
     if (name) {
-      data.name = name as unknown as Prisma.InputJsonValue;
+      data.name = toLocalizedJson(name) as unknown as Prisma.InputJsonValue;
     }
     if (description) {
-      data.description = description as unknown as Prisma.InputJsonValue;
+      data.description = toLocalizedJson(description) as unknown as Prisma.InputJsonValue;
     }
     if (metadata) {
-      data.metadata = metadata as unknown as Prisma.InputJsonValue;
+      const metaObj =
+        typeof metadata === PRIMITIVE_TYPES.STRING
+          ? JSON.parse(metadata as unknown as string)
+          : metadata;
+      data.metadata = metaObj as unknown as Prisma.InputJsonValue;
     }
 
     return this.prisma.product.update({
@@ -156,7 +238,7 @@ export class ProductService {
   }
 
   async remove(externalId: string) {
-    await this.findOne(externalId);
+    await this.findOneAnyStatus(externalId);
     return this.prisma.product.delete({
       where: { externalId },
     });

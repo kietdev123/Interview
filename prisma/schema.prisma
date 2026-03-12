@@ -190,6 +190,23 @@ enum OperationalStatus {
   LOCKED      
 }
 
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CourierApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CourierOnlineStatus {
+  ONLINE
+  OFFLINE
+}
+
 model Brand {
   id          Int     @id @default(autoincrement())
   externalId  String  @unique @default(uuid()) @map("external_id") @db.Uuid
@@ -223,6 +240,7 @@ model Category {
   
   brands   BrandCategory[]
   merchants MerchantCategory[]
+  products Product[]
 
   @@map("categories")
 }
@@ -398,6 +416,8 @@ model Product {
   id          Int      @id @default(autoincrement())
   externalId  String   @unique @default(uuid()) @map("external_id") @db.Uuid
   merchantId  Int      @map("merchant_id")
+  categoryId  Int?     @map("category_id")
+  status      ProductStatus @default(DRAFT)
   
   // Menu Organization
   sectionId   Int?     @map("section_id")
@@ -420,6 +440,7 @@ model Product {
 
   // Relations
   merchant          Merchant          @relation(fields: [merchantId], references: [id])
+  category          Category?         @relation(fields: [categoryId], references: [id])
   section           MenuSection?      @relation(fields: [sectionId], references: [id])
   
   variants          ProductVariant[]
@@ -427,6 +448,8 @@ model Product {
   orderItems        OrderItem[]
   reviews           Review[]
 
+  @@index([merchantId])
+  @@index([categoryId])
   @@map("products")
 }
 
@@ -484,9 +507,12 @@ model Courier {
   userId          Int      @unique @map("user_id")
   name            String?
   phone           String?
-  status          String?  // 'available' | 'busy' | 'offline'
+  approvalStatus  CourierApprovalStatus @default(PENDING) @map("approval_status")
+  onlineStatus    CourierOnlineStatus @default(OFFLINE) @map("online_status")
   vehicleType     String?  @map("vehicle_type") // 'bike' | 'motorbike' | 'car'
   currentLocation Json?    @map("current_location")
+  latitude        Float?
+  longitude       Float?
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime? @updatedAt @map("updated_at")
 
@@ -494,6 +520,7 @@ model Courier {
   user   User    @relation(fields: [userId], references: [id])
   orders Order[]
 
+  @@index([approvalStatus, onlineStatus])
   @@map("couriers")
 }
 
