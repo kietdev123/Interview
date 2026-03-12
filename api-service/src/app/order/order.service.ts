@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,10 +14,48 @@ import { PrismaService } from '../prisma.service';
 import { CartService } from '../cart/cart.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { COMMON_MESSAGES } from '../common/constants/messages.constant';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrderService {
   constructor(private prisma: PrismaService, private cartService: CartService) {}
+
+  async findAllByUser(userId: number) {
+    return this.prisma.order.findMany({
+      where: { userId },
+      include: {
+        orderItems: {
+          include: { product: true },
+        },
+        courier: true,
+        merchant: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findOneByExternalId(userId: number, externalId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { externalId },
+      include: {
+        orderItems: {
+          include: { product: true },
+        },
+        courier: true,
+        merchant: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (order.userId !== userId) {
+      throw new ForbiddenException(COMMON_MESSAGES.USER_NOT_FOUND_IN_CONTEXT);
+    }
+
+    return order;
+  }
 
   async createFromCart(userId: number, merchantId: string, dto: CreateOrderDto) {
     const merchantIdNumber = await this.resolveMerchantId(merchantId);
@@ -97,6 +136,43 @@ export class OrderService {
         merchant: true,
       },
     });
+  }
+
+  async updateByExternalId(userId: number, externalId: string, dto: UpdateOrderDto) {
+    const order = await this.findOneByExternalId(userId, externalId);
+
+    const updateData: Prisma.OrderUpdateInput = {};
+
+    if (dto.status !== undefined) {
+      updateData.status = dto.status;
+    }
+
+    if (dto.paymentStatus !== undefined) {
+      updateData.paymentStatus = dto.paymentStatus;
+    }
+
+    if (dto.deliveryAddress !== undefined) {
+      updateData.deliveryAddress = dto.deliveryAddress as unknown as Prisma.InputJsonValue;
+    }
+
+    return this.prisma.order.update({
+      where: { id: order.id },
+      data: updateData,
+      include: {
+        orderItems: {
+          include: { product: true },
+        },
+        courier: true,
+        merchant: true,
+      },
+    });
+  }
+
+  async removeByExternalId(userId: number, externalId: string) {
+    const order = await this.findOneByExternalId(userId, externalId);
+
+    await this.prisma.orderItem.deleteMany({ where: { orderId: order.id } });
+    return this.prisma.order.delete({ where: { id: order.id } });
   }
 
   private async selectCourierId(merchantId: number): Promise<number | null> {

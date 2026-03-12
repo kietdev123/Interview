@@ -9,6 +9,35 @@ import { ApproveCourierDto } from './dto/approve-courier.dto';
 export class CourierService {
   constructor(private prisma: PrismaService) {}
 
+  async findEligibleCouriers(search?: string) {
+    const keyword = search?.trim();
+
+    return this.prisma.courier.findMany({
+      where: {
+        approvalStatus: CourierApprovalStatus.APPROVED,
+        onlineStatus: CourierOnlineStatus.ONLINE,
+        ...(keyword
+          ? {
+              OR: [
+                { name: { contains: keyword, mode: 'insensitive' } },
+                { phone: { contains: keyword } },
+              ],
+            }
+          : {}),
+      },
+      include: {
+        user: {
+          select: {
+            externalId: true,
+            email: true,
+            username: true,
+          },
+        },
+      },
+      orderBy: { id: 'asc' },
+    });
+  }
+
   async updateOnlineStatus(userId: number, dto: UpdateCourierStatusDto) {
     return this.prisma.courier.update({
       where: { userId },

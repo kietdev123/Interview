@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Task 3 - API Collection",
-    "description": "Postman collection for Task 3 flows: auth, merchant registration/approval, product publish, storefront, cart, order, courier approval/status.",
+    "description": "Login-only Postman collection with seeded accounts and CRUD coverage for merchant product, cart and order flows.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -18,15 +18,11 @@
     { "key": "courierEmail", "value": "courier_1@example.com" },
     { "key": "courierPassword", "value": "Password123!" },
     { "key": "courierAccessToken", "value": "" },
-    { "key": "merchantPhone", "value": "0980000000" },
-    { "key": "otpCode", "value": "" },
-    { "key": "verificationToken", "value": "" },
     { "key": "merchantExternalId", "value": "" },
     { "key": "merchantId", "value": "" },
     { "key": "productExternalId", "value": "" },
-    { "key": "courierId", "value": "" },
     { "key": "cartItemId", "value": "" },
-    { "key": "orderId", "value": "" }
+    { "key": "orderExternalId", "value": "" }
   ],
   "item": [
     {
@@ -42,7 +38,7 @@
       ]
     },
     {
-      "name": "Auth",
+      "name": "Auth (Login Only)",
       "item": [
         {
           "name": "POST /auth/login (admin)",
@@ -70,7 +66,7 @@
           }
         },
         {
-          "name": "POST /auth/register (merchant owner)",
+          "name": "POST /auth/login (merchant owner)",
           "event": [
             {
               "listen": "test",
@@ -89,13 +85,13 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{merchantOwnerEmail}}\",\n  \"password\": \"{{merchantOwnerPassword}}\",\n  \"username\": \"merchant_owner_1\",\n  \"phone\": \"0900000000\"\n}"
+              "raw": "{\n  \"email\": \"{{merchantOwnerEmail}}\",\n  \"password\": \"{{merchantOwnerPassword}}\"\n}"
             },
-            "url": "{{baseUrl}}/auth/register"
+            "url": "{{baseUrl}}/auth/login"
           }
         },
         {
-          "name": "POST /auth/register (customer)",
+          "name": "POST /auth/login (customer)",
           "event": [
             {
               "listen": "test",
@@ -114,13 +110,13 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{customerEmail}}\",\n  \"password\": \"{{customerPassword}}\",\n  \"username\": \"customer_1\",\n  \"phone\": \"0900000001\"\n}"
+              "raw": "{\n  \"email\": \"{{customerEmail}}\",\n  \"password\": \"{{customerPassword}}\"\n}"
             },
-            "url": "{{baseUrl}}/auth/register"
+            "url": "{{baseUrl}}/auth/login"
           }
         },
         {
-          "name": "POST /auth/register (courier)",
+          "name": "POST /auth/login (courier)",
           "event": [
             {
               "listen": "test",
@@ -139,9 +135,9 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{courierEmail}}\",\n  \"password\": \"{{courierPassword}}\",\n  \"username\": \"courier_1\",\n  \"phone\": \"0900000002\"\n}"
+              "raw": "{\n  \"email\": \"{{courierEmail}}\",\n  \"password\": \"{{courierPassword}}\"\n}"
             },
-            "url": "{{baseUrl}}/auth/register"
+            "url": "{{baseUrl}}/auth/login"
           }
         }
       ]
@@ -150,68 +146,27 @@
       "name": "Merchant",
       "item": [
         {
-          "name": "POST /merchants/otp/request",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"phone\": \"{{merchantPhone}}\"\n}"
-            },
-            "url": "{{baseUrl}}/merchants/otp/request"
-          }
-        },
-        {
-          "name": "POST /merchants/otp/verify",
+          "name": "GET /merchants?approvalStatus=PENDING (find seeded merchant)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
                   "var json = pm.response.json();",
-                  "pm.collectionVariables.set('verificationToken', json.verificationToken);"
+                  "var data = json.data || [];",
+                  "var target = data.find(function (m) { return m.owner && m.owner.email === pm.collectionVariables.get('merchantOwnerEmail'); }) || data[0];",
+                  "pm.expect(target, 'Seeded pending merchant not found').to.exist;",
+                  "pm.collectionVariables.set('merchantExternalId', target.externalId);"
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"phone\": \"{{merchantPhone}}\",\n  \"code\": \"{{otpCode}}\"\n}"
-            },
-            "url": "{{baseUrl}}/merchants/otp/verify"
-          }
-        },
-        {
-          "name": "POST /merchants/register (self-register)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
-                  "var json = pm.response.json();",
-                  "pm.collectionVariables.set('merchantExternalId', json.externalId);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{merchantOwnerAccessToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Test Merchant\",\n  \"phone\": \"{{merchantPhone}}\",\n  \"verificationToken\": \"{{verificationToken}}\",\n  \"address\": \"123 Test St\",\n  \"city\": \"HCM\",\n  \"contactName\": \"Owner\",\n  \"businessType\": \"ONLINE\",\n  \"businessCategory\": \"FOOD\",\n  \"hasBusinessLicense\": false\n}"
-            },
-            "url": "{{baseUrl}}/merchants/register"
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }],
+            "url": "{{baseUrl}}/merchants?page=1&limit=20&approvalStatus=PENDING"
           }
         },
         {
@@ -230,7 +185,7 @@
           }
         },
         {
-          "name": "GET /merchants/:externalId (get numeric merchantId)",
+          "name": "GET /merchants/:externalId (set merchantId)",
           "event": [
             {
               "listen": "test",
@@ -249,14 +204,22 @@
             "header": [{ "key": "Authorization", "value": "Bearer {{merchantOwnerAccessToken}}" }],
             "url": "{{baseUrl}}/merchants/{{merchantExternalId}}"
           }
+        },
+        {
+          "name": "GET /merchants (search)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }],
+            "url": "{{baseUrl}}/merchants?page=1&limit=10&search=merchant"
+          }
         }
       ]
     },
     {
-      "name": "Product",
+      "name": "Product CRUD",
       "item": [
         {
-          "name": "POST /products (create DRAFT)",
+          "name": "POST /products",
           "event": [
             {
               "listen": "test",
@@ -278,13 +241,43 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"merchantId\": \"{{merchantId}}\",\n  \"name\": { \"vi\": \"Banh mi\" },\n  \"description\": { \"vi\": \"Ngon\" },\n  \"price\": 100,\n  \"sku\": \"SKU-POSTMAN-1\",\n  \"stock\": 10,\n  \"status\": \"DRAFT\"\n}"
+              "raw": "{\n  \"merchantId\": \"{{merchantId}}\",\n  \"name\": { \"vi\": \"Banh mi dac biet\", \"en\": \"Special Banh Mi\" },\n  \"description\": { \"vi\": \"Ngon va gion\", \"en\": \"Crispy and tasty\" },\n  \"price\": 35000,\n  \"sku\": \"SKU-POSTMAN-CRUD-1\",\n  \"stock\": 25,\n  \"status\": \"DRAFT\"\n}"
             },
             "url": "{{baseUrl}}/products?merchantId={{merchantId}}"
           }
         },
         {
-          "name": "PATCH /products/:externalId (publish)",
+          "name": "GET /products/merchant/:merchantId",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{merchantOwnerAccessToken}}" }],
+            "url": "{{baseUrl}}/products/merchant/{{merchantExternalId}}?page=1&limit=10"
+          }
+        },
+        {
+          "name": "GET /products/merchant/:merchantId (search)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{merchantOwnerAccessToken}}" }],
+            "url": "{{baseUrl}}/products/merchant/{{merchantExternalId}}?page=1&limit=10&search=banh"
+          }
+        },
+        {
+          "name": "GET /products/:externalId",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products/{{productExternalId}}"
+          }
+        },
+        {
+          "name": "GET /products (search published)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products?search=banh"
+          }
+        },
+        {
+          "name": "PATCH /products/:externalId",
           "request": {
             "method": "PATCH",
             "header": [
@@ -293,67 +286,26 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"PUBLISHED\"\n}"
+              "raw": "{\n  \"price\": 39000,\n  \"stock\": 40,\n  \"status\": \"PUBLISHED\"\n}"
             },
+            "url": "{{baseUrl}}/products/{{productExternalId}}"
+          }
+        },
+        {
+          "name": "DELETE /products/:externalId",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{merchantOwnerAccessToken}}" }],
             "url": "{{baseUrl}}/products/{{productExternalId}}"
           }
         }
       ]
     },
     {
-      "name": "Storefront (B2C)",
-      "item": [
-        {
-          "name": "GET /storefront/products",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{customerAccessToken}}" }],
-            "url": "{{baseUrl}}/storefront/products?page=1&limit=10"
-          }
-        },
-        {
-          "name": "GET /storefront/products/:externalId",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{customerAccessToken}}" }],
-            "url": "{{baseUrl}}/storefront/products/{{productExternalId}}"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Cart",
+      "name": "Cart CRUD",
       "item": [
         {
           "name": "POST /carts/merchant/:merchantId/items",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{customerAccessToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"productExternalId\": \"{{productExternalId}}\",\n  \"quantity\": 1\n}"
-            },
-            "url": "{{baseUrl}}/carts/merchant/{{merchantId}}/items"
-          }
-        },
-        {
-          "name": "GET /carts/merchant/:merchantId",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{customerAccessToken}}" }],
-            "url": "{{baseUrl}}/carts/merchant/{{merchantId}}"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Order",
-      "item": [
-        {
-          "name": "POST /orders/merchant/:merchantId (create from cart)",
           "event": [
             {
               "listen": "test",
@@ -362,7 +314,10 @@
                 "exec": [
                   "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
                   "var json = pm.response.json();",
-                  "pm.collectionVariables.set('orderId', String(json.id));"
+                  "var data = json.data || {};",
+                  "var items = data.cartItems || [];",
+                  "var found = items.find(function (item) { return item.product && item.product.externalId === pm.collectionVariables.get('productExternalId'); }) || items[0];",
+                  "if (found) { pm.collectionVariables.set('cartItemId', String(found.id)); }"
                 ]
               }
             }
@@ -375,9 +330,112 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"deliveryAddress\": {\n    \"name\": \"Customer\",\n    \"phone\": \"0900000001\",\n    \"addressLine\": \"456 Customer St\"\n  }\n}"
+              "raw": "{\n  \"productExternalId\": \"{{productExternalId}}\",\n  \"quantity\": 2\n}"
+            },
+            "url": "{{baseUrl}}/carts/merchant/{{merchantId}}/items"
+          }
+        },
+        {
+          "name": "GET /carts/merchant/:merchantId",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerAccessToken}}" }],
+            "url": "{{baseUrl}}/carts/merchant/{{merchantId}}"
+          }
+        },
+        {
+          "name": "PATCH /carts/items/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerAccessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3\n}"
+            },
+            "url": "{{baseUrl}}/carts/items/{{cartItemId}}"
+          }
+        },
+        {
+          "name": "DELETE /carts/items/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerAccessToken}}" }],
+            "url": "{{baseUrl}}/carts/items/{{cartItemId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order CRUD",
+      "item": [
+        {
+          "name": "POST /orders/merchant/:merchantId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('orderExternalId', json.externalId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerAccessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deliveryAddress\": {\n    \"name\": \"Customer One\",\n    \"phone\": \"0900000001\",\n    \"addressLine\": \"456 Customer St\",\n    \"note\": \"Giao truoc 18h\"\n  }\n}"
             },
             "url": "{{baseUrl}}/orders/merchant/{{merchantId}}"
+          }
+        },
+        {
+          "name": "GET /orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerAccessToken}}" }],
+            "url": "{{baseUrl}}/orders"
+          }
+        },
+        {
+          "name": "GET /orders/:externalId",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerAccessToken}}" }],
+            "url": "{{baseUrl}}/orders/{{orderExternalId}}"
+          }
+        },
+        {
+          "name": "PATCH /orders/:externalId",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerAccessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\",\n  \"paymentStatus\": \"paid\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderExternalId}}"
+          }
+        },
+        {
+          "name": "DELETE /orders/:externalId",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerAccessToken}}" }],
+            "url": "{{baseUrl}}/orders/{{orderExternalId}}"
           }
         }
       ]
@@ -386,48 +444,11 @@
       "name": "Courier",
       "item": [
         {
-          "name": "PATCH /couriers/:id/approve (admin)",
+          "name": "GET /couriers/eligible (merchant owner)",
           "request": {
-            "method": "PATCH",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"approvalStatus\": \"APPROVED\"\n}"
-            },
-            "url": "{{baseUrl}}/couriers/{{courierId}}/approve"
-          }
-        },
-        {
-          "name": "PATCH /couriers/me/status",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{courierAccessToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"onlineStatus\": \"ONLINE\"\n}"
-            },
-            "url": "{{baseUrl}}/couriers/me/status"
-          }
-        },
-        {
-          "name": "PATCH /couriers/me/location",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{courierAccessToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"latitude\": 10.0,\n  \"longitude\": 10.0\n}"
-            },
-            "url": "{{baseUrl}}/couriers/me/location"
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{merchantOwnerAccessToken}}" }],
+            "url": "{{baseUrl}}/couriers/eligible?search=090"
           }
         }
       ]

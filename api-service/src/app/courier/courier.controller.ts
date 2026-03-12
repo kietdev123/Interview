@@ -1,4 +1,13 @@
-import { Body, Controller, Param, Patch, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -11,6 +20,13 @@ import { ApproveCourierDto } from './dto/approve-courier.dto';
 @Controller('couriers')
 export class CourierController {
   constructor(private readonly courierService: CourierService) {}
+
+  @Get('eligible')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ROLE.MERCHANT_OWNER, ROLE.PLATFORM_ADMIN)
+  findEligibleCouriers(@Query('search') search?: string) {
+    return this.courierService.findEligibleCouriers(search);
+  }
 
   @Patch('me/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
